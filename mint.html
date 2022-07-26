@@ -1,0 +1,140 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+<script src="https://unpkg.com/nice-select2@1.0.0/dist/js/nice-select2.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" rel="stylesheet">
+<link href="https://unpkg.com/nice-select2@1.0.0/dist/css/nice-select2.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<link href="custom.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.0-rc.0/web3.min.js"></script>
+<script src="https://unpkg.com/f0js/dist/f0.js"></script>
+<script src="https://unpkg.com/@walletconnect/web3-provider/dist/umd/index.min.js"></script>
+<script src="https://unpkg.com/web3modal@1.9.5/dist/index.js"></script>
+<script src="connect.js"></script>
+<script src="handleerror.js"></script>
+<script id="template" type="text/x-handlebars-template">
+  <img src="{{image}}">
+  <h1><a href=".">{{title}}</a></h1>
+  <div class='label'>{{price}}</div>
+  <div class='label'>{{current}}/{{supply}}</div>
+  <div class='minter'>
+    <select id='count'>
+      <option value="" selected disabled hidden>Select mint count</option>
+      {{#each items}}
+      <option value={{count}}>{{count}}</option>
+      {{/each}}
+    </select>
+    <button id='mint'>Mint</button>
+  </div>
+  <div class='console'></div>
+  <div class='loading hidden'>
+    <i class="fa-solid fa-chevron-up fa-flip"></i> minting...
+  </div>
+  <div class='power'>
+    <div class='line'>
+      <div class='b'>verified contract</div>
+      <a target="_blank" href="{{etherscan}}">{{contract}}</a>
+    </div>
+    <div class='line'>
+      <div class='b'>collection explorer</div>
+      <a target="_blank" href="https://open.factoria.app/contract/#{{contract}}">Factoria</a>
+    </div>
+  </div>
+</script>
+<script id="mint-template" type="text/x-handlebars-template">
+<table class='table'>
+<tr>
+  <th><img src="opensea.png"></th>
+  <th><img src="looksrare.png"></th>
+  <th><img src="rarible.png"></th>
+</tr>
+{{#each items}}
+<tr>
+  <td><a class='token' target="_blank" href="{{opensea}}">token #{{tokenId}}</a></td>
+  <td><a class='token' target="_blank" href="{{looksrare}}">token #{{tokenId}}</a></td>
+  <td><a class='token' target="_blank" href="{{rarible}}">token #{{tokenId}}</a></td>
+</tr>
+{{/each}}
+</table>
+</script>
+<script>
+const template = Handlebars.compile(document.querySelector("#template").innerHTML);
+const mintTemplate = Handlebars.compile(document.querySelector("#mint-template").innerHTML);
+document.addEventListener("DOMContentLoaded", async () => {
+  let c = await fetch("box.json").then((r) => {
+    return r.json()
+  })
+  try {
+    let { f0, web3, cached } = await connect(c)
+    const { key, address } = f0.parseURL(location.href)
+
+    let net = await web3.eth.getChainId()
+    let netPrefix = (net.toString() === "4" ? "rinkeby." : "")
+    let etherscan = `https://${netPrefix}etherscan.io/address/${c.contract}#code`
+
+    let invite = await f0.invite(key)
+    let placeholder = await f0.placeholder()
+    const name = await f0.name()
+    const symbol = await f0.symbol()
+    const nextId = await f0.nextId()
+    const config = await f0.config()
+    let items = []
+    for(let i=1; i<=invite.condition.converted.limit; i++) {
+      items.push(i)
+    }
+    let image = (cached && cached[placeholder.converted.image] ? cached[placeholder.converted.image] : placeholder.converted.image)
+    document.querySelector(".box").innerHTML = template({
+      image,
+      etherscan,
+      contract: c.contract,
+      title: `${name} (${symbol})`,
+      items: items.map((item) => { return { count: item } }),
+      max: invite.condition.converted.limit,
+      price: `${invite.condition.converted.eth} ETH`,
+      current: nextId,
+      supply: config.converted.supply,
+      account: f0.account,
+      key: key,
+    })
+    NiceSelect.bind(document.querySelector("select"))
+    document.querySelector("#mint").addEventListener("click", async (e) => {
+      document.querySelector(".minter").classList.add("hidden")
+      document.querySelector(".loading").classList.remove("hidden")
+      let count = parseInt(document.querySelector("#count").value)
+      if (count === 0) {
+        alert("Please enter a number greater than 0")
+      } else {
+        try {
+          let tokens = await f0.mint(key, count)
+          document.querySelector(".loading").classList.add("hidden")
+          document.querySelector(".console").innerHTML = mintTemplate({
+            items: tokens.map((token) => {
+              let i = { tokenId: token.tokenId }
+              if (token.links.opensea) i.opensea = token.links.opensea
+              if (token.links.rarible) i.rarible = token.links.rarible
+              if (token.links.looksrare) i.looksrare = token.links.looksrare
+              return i
+            })
+          })
+        } catch (e) {
+          document.querySelector(".box").classList.add("hidden")
+          document.querySelector(".error").innerHTML = `${handleError(e.message)}`
+        }
+      }
+    })
+  } catch (e) {
+    document.querySelector(".box").classList.add("hidden")
+    document.querySelector(".error").innerHTML = `${e.message.toLowerCase()}`
+  }
+})
+</script>
+</head>
+<body>
+<div class='box'>
+  <div class="lds-ripple"><div></div><div></div></div>
+  <h2>Loading...</h2>
+</div>
+<pre class='error'></pre>
+</body>
+</html>

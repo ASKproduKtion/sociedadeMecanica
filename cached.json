@@ -1,0 +1,22 @@
+{
+  "https://ipfs.io/ipfs/bafkreidzuhghgp3csqt3vrc46km3nodxad6lwypq4yzl3wy622ylsd3ivu": {
+    "addresses": [
+      "0x40079cF951b6CC42FCfeCe15526470a5Ad5A5959",
+      "0x7023b9371922da4fedaf9be51017010719745e9d"
+    ]
+  },
+  "https://ipfs.io/ipfs/bafkreiaqajdjmx25cbzayq7qjcxoh6saewswsnqe2yx4lgbwwfd6fgkicm": {
+    "addresses": [
+      "0x88c436a8e17028363d7B6633F3EC2EB1F2BcC80a"
+    ]
+  },
+  "https://ipfs.io/ipfs/bafkreiabttab2rtrhjw37w52iztizxznk4vtpl7m4vt5pb424qxmapq5ei": {
+    "addresses": [
+      "0x40079cF951b6CC42FCfeCe15526470a5Ad5A5959"
+    ]
+  },
+  "https://ipfs.io/ipfs/bafkreicldvggmkd3tizbngsu7mymmf6y5bhayrzgjtm4zk6s6vqesnevs4": {
+    "image": "ipfs://bafybeie5dnevdihu3u5mav646eemblawnhhonbjuoxq55oiitws3j3nmhe"
+  },
+  "https://ipfs.io/ipfs/bafybeie5dnevdihu3u5mav646eemblawnhhonbjuoxq55oiitws3j3nmhe": "bafybeie5dnevdihu3u5mav646eemblawnhhonbjuoxq55oiitws3j3nmhe"
+}
